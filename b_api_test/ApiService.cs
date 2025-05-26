@@ -56,42 +56,40 @@ public class ApiService
         _httpClient.DefaultRequestHeaders.Add(name, value);
         return this;
     }
-    
+
     /// <summary>
     /// Performs a GET request to the specified endpoint
     /// </summary>
-    /// <typeparam name="T">The type to deserialize the response to</typeparam>
     /// <param name="endpoint">The API endpoint (will be appended to the base URL)</param>
     /// <returns>The deserialized response</returns>
-    public async Task<System.Net.Http.HttpResponseMessage> GetAsync(string endpoint)
+    public async Task<HttpResponseMessage> GetAsync(string endpoint)
     {
         var response = await _httpClient.GetAsync($"{_baseUrl}/{endpoint.TrimStart('/')}");
         return response;
     }
-    
+
     /// <summary>
     /// Performs a POST request to the specified endpoint
     /// </summary>
-    /// <typeparam name="T">The type to deserialize the response to</typeparam>
-    /// <param name="endpoint">The API endpoint (will be appended to the base URL)</param>
+    /// <param>The API endpoint (will be appended to the base URL)</param>
+    /// <param name="endpoint"></param>
     /// <param name="data">The data to send in the request body</param>
     /// <returns>The deserialized response</returns>
-    public async Task<System.Net.Http.HttpResponseMessage> PostAsync(string endpoint, object data)
+    public async Task<HttpResponseMessage> PostAsync(string endpoint, object data)
     {
         var content = CreateJsonContent(data);
         var response = await _httpClient.PostAsync($"{_baseUrl}/{endpoint.TrimStart('/')}", content);
         return response;
     }
-    
-    
+
+
     /// <summary>
     /// Performs a PUT request to the specified endpoint
     /// </summary>
-    /// <typeparam name="HttpResponseMessage">The type to deserialize the response to</typeparam>
     /// <param name="endpoint">The API endpoint (will be appended to the base URL)</param>
     /// <param name="data">The data to send in the request body</param>
     /// <returns>The deserialized response</returns>
-    public async Task<System.Net.Http.HttpResponseMessage> PutAsync(string endpoint, object data)
+    public async Task<HttpResponseMessage> PutAsync(string endpoint, object data)
     {
         var content = CreateJsonContent(data);
         var response = await _httpClient.PutAsync($"{_baseUrl}/{endpoint.TrimStart('/')}", content);
@@ -103,11 +101,10 @@ public class ApiService
     /// <summary>
     /// Performs a PATCH request to the specified endpoint
     /// </summary>
-    /// <typeparam name="HttpResponseMessage">The type to deserialize the response to</typeparam>
     /// <param name="endpoint">The API endpoint (will be appended to the base URL)</param>
     /// <param name="data">The data to send in the request body</param>
     /// <returns>The deserialized response</returns>
-    public async Task<System.Net.Http.HttpResponseMessage> PatchAsync(string endpoint, object data)
+    public async Task<HttpResponseMessage> PatchAsync(string endpoint, object data)
     {
         var content = CreateJsonContent(data);
         var response = await _httpClient.PatchAsync($"{_baseUrl}/{endpoint.TrimStart('/')}", content);
@@ -118,10 +115,9 @@ public class ApiService
     /// <summary>
     /// Performs a DELETE request to the specified endpoint
     /// </summary>
-    /// <typeparam name="HttpResponseMessage">The type to deserialize the response to</typeparam>
     /// <param name="endpoint">The API endpoint (will be appended to the base URL)</param>
     /// <returns>The deserialized response</returns>
-    public async Task<System.Net.Http.HttpResponseMessage> DeleteAsync(string endpoint)
+    public async Task<HttpResponseMessage> DeleteAsync(string endpoint)
     {
         var response = await _httpClient.DeleteAsync($"{_baseUrl}/{endpoint.TrimStart('/')}");
         return response;

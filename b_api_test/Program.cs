@@ -1,6 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-using System.Net.Http.Json;
-using b_api_test;
+﻿using b_api_test;
 
 Console.WriteLine("API Service Example");
 
@@ -19,7 +17,7 @@ var tester = new ApiTester(
         .SetBaseUrl(baseUrl2)
 );
 
-// Example of running tests (commented out since they would try to execute)
+// Example of running tests (commented out since would try to execute)
 // await tester.TestGetAsync<WeatherData>("weather/current");
 // await tester.TestPostAsync<WeatherData>("weather/record", weatherData);
 

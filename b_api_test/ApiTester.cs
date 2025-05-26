@@ -124,7 +124,6 @@ public class ApiTester
     /// <summary>
     /// Tests a DELETE request to the specified endpoint with both API services and compares the results
     /// </summary>
-    /// <typeparam name="HttpResponseMessage">The type to deserialize the response to</typeparam>
     /// <param name="endpoint">The API endpoint to test</param>
     /// <returns>A tuple containing the results from both services and comparison metrics</returns>
     private async  Task<ComparisonResult>  TestDeleteAsync(string endpoint)
@@ -148,13 +147,12 @@ public class ApiTester
     /// <summary>
     /// Compares the results from both API services
     /// </summary>
-    /// <typeparam name="HttpResponseMessage">The type of the results</typeparam>
     /// <param name="resultA">The result from the first API service</param>
     /// <param name="resultB">The result from the second API service</param>
     /// <param name="timeA">The time taken by the first API service in milliseconds</param>
     /// <param name="timeB">The time taken by the second API service in milliseconds</param>
     /// <returns>A comparison result object</returns>
-    private static async Task<ComparisonResult> CompareResults(System.Net.Http.HttpResponseMessage resultA, System.Net.Http.HttpResponseMessage resultB, long timeA, long timeB) 
+    private static async Task<ComparisonResult> CompareResults(HttpResponseMessage resultA, HttpResponseMessage resultB, long timeA, long timeB) 
     {
 
         
@@ -165,14 +163,14 @@ public class ApiTester
             TimeDifference = timeA - timeB,
             ResultsEqual = false,
             TestName = "Not specified",
-            path = resultA.RequestMessage.RequestUri.PathAndQuery,
-            method = resultA.RequestMessage.Method.Method,
+            path = resultA.RequestMessage?.RequestUri?.PathAndQuery,
+            method = resultA.RequestMessage?.Method.Method,
             requestBodyA = await resultA.Content.ReadAsStringAsync(),
             requestBodyB = await resultB.Content.ReadAsStringAsync(),
-            ResultAStatusCode = resultA.StatusCode != null ? (int)resultA.StatusCode : 0,
-            ResultBStatusCode = resultB.StatusCode != null ? (int)resultB.StatusCode : 0,
-            ResultA = resultA.Content.ToString(),
-            ResultB = resultB.Content.ToString()
+            ResultAStatusCode = (int)resultA.StatusCode,
+            ResultBStatusCode = (int)resultB.StatusCode,
+            ResultA = resultA.Content.ToString()?? "",
+            ResultB = resultB.Content.ToString()?? ""
         };
         
         // Compare content of the two ResultA and ResultB
@@ -231,8 +229,6 @@ public class ApiTester
     /// <summary>
     /// Runs a comprehensive test suite on both API services
     /// </summary>
-    /// <typeparam name="HttpResponseMessage">The type to deserialize the responses to</typeparam>
-    /// <param name="endpoints">Dictionary of endpoints to test with their corresponding request data</param>
     /// <returns>A dictionary of test results for each endpoint</returns>
     public async Task<Dictionary<string, ComparisonResult>> RunTestSuiteAsync(
         Dictionary<(string Endpoint, HttpMethod Method, object? Data), string> tests)
@@ -248,7 +244,7 @@ public class ApiTester
             
             try
             {
-                ComparisonResult result = key.Method switch
+                var result = key.Method switch
                 {
                     HttpMethod m when m == HttpMethod.Get => await TestGetAsync(key.Endpoint),
                     HttpMethod m when m == HttpMethod.Post => await TestPostAsync(key.Endpoint, key.Data!),
@@ -333,9 +329,9 @@ public class ComparisonResult
     /// </summary>
     public string ResultB { get; set; } = string.Empty;
     
-    public string path { get; set; } = string.Empty;
+    public string? path { get; set; } = string.Empty;
     
-    public string method { get; set; } = string.Empty;
+    public string? method { get; set; } = string.Empty;
     
     public string requestBodyA { get; set; } = string.Empty;
     
