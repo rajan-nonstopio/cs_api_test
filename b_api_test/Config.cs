@@ -9,12 +9,46 @@ public static class Config
 
     private static string token2 => "";
     
-    public static Dictionary<(string Endpoint, HttpMethod Method, object? Data), string> DefaultTestSuite => new()
-    {
-        { ("/api/clientTestCodes/custom-panel?hospitalCode=NISC&preCarveOutTestCode=24001", HttpMethod.Get, null), "Client Custom panels" },
-        { ("/api/clientTestCodes/code/24001", HttpMethod.Get, null), "Client Test code" },
-        { ("/api/clientTestCodes?clientTestcode=NISC-24001-P2-1", HttpMethod.Get, null), "Get Client Test codes" },
-    };
+    public static List<TestApiDetails> testSuite => [
+      new TestApiDetails  {
+            TestName = "Client Custom panels",
+            Method = HttpMethod.Get,
+            Endpoint = "/api/clientTestCodes/custom-panel?hospitalCode=NISC&preCarveOutTestCode=24001",
+          
+        },
+      new TestApiDetails
+      {
+          TestName = "Client Test code",
+          Method = HttpMethod.Get,
+          Endpoint = "/api/clientTestCodes/code/24001",
+      },
+      new  TestApiDetails
+      {
+          TestName ="Get Client Test codes" ,
+          Method = HttpMethod.Get,
+          Endpoint = "/api/clientTestCodes?clientTestcode=NISC-24001-P2-1",
+      },
+      new TestApiDetails {
+        TestName = "Create client test code",
+        Method = HttpMethod.Post,
+        Endpoint = "api/clientTestCodes",
+        Data =  new
+        {
+            name = "ANISC-24001-P2-17761",
+            hospitalCode = "NISC", 
+            reportName = "POST TEST API name",
+            processorName = "GANateraProcessor",
+            testCode = 24001,
+            billingCode = "PRPN",
+            genes = new[]
+            {
+                "EPCAM",
+                "MLH1"
+            }
+        }
+      }
+    ];
+    
     
     public static ApiTester CreateDefaultTester()
     {
@@ -30,4 +64,12 @@ public static class Config
                 .AddHeader("accept", "application/json")
         );
     }
+}
+
+public class TestApiDetails
+{
+    public string Endpoint { get; set; }
+    public HttpMethod Method { get; set; }
+    public object? Data { get; set; }
+    public string TestName { get; set; }
 }

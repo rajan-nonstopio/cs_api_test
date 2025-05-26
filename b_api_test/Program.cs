@@ -3,7 +3,7 @@
 Console.WriteLine("API Service Example");
 
 var tester = Config.CreateDefaultTester();
-var testSuite = Config.DefaultTestSuite;
+var testSuite = Config.testSuite;
 // Execute the test suite
 var results = await tester.RunTestSuiteAsync(testSuite);
 

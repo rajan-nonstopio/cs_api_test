@@ -43,7 +43,7 @@ public class ApiTester
         var resultB = await _serviceB.GetAsync(endpoint);
         stopwatchB.Stop();
         
-        var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds);
+        var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds, null);
         DisplayComparisonResults(comparison);
         
         return comparison;
@@ -67,7 +67,7 @@ public class ApiTester
         var resultB = await _serviceB.PostAsync(endpoint, data);
         stopwatchB.Stop();
         
-        var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds);
+        var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds, data);
         DisplayComparisonResults(comparison);
         
         return comparison;
@@ -91,7 +91,7 @@ public class ApiTester
         var resultB = await _serviceB.PutAsync(endpoint, data);
         stopwatchB.Stop();
         
-        var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds);
+        var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds,data);
         DisplayComparisonResults(comparison);
         
         return comparison;
@@ -115,7 +115,7 @@ public class ApiTester
         var resultB = await _serviceB.PatchAsync(endpoint, data);
         stopwatchB.Stop();
         
-        var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds);
+        var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds, data);
         DisplayComparisonResults(comparison);
         
         return comparison;
@@ -138,7 +138,7 @@ public class ApiTester
         var resultB = await _serviceB.DeleteAsync(endpoint);
         stopwatchB.Stop();
         
-        var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds);
+        var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds, null);
         DisplayComparisonResults(comparison);
         
         return  comparison;
@@ -152,7 +152,7 @@ public class ApiTester
     /// <param name="timeA">The time taken by the first API service in milliseconds</param>
     /// <param name="timeB">The time taken by the second API service in milliseconds</param>
     /// <returns>A comparison result object</returns>
-    private static async Task<ComparisonResult> CompareResults(HttpResponseMessage resultA, HttpResponseMessage resultB, long timeA, long timeB) 
+    private static async Task<ComparisonResult> CompareResults(HttpResponseMessage resultA, HttpResponseMessage resultB, long timeA, long timeB, object? requestData) 
     {
 
         
@@ -165,7 +165,7 @@ public class ApiTester
             TestName = "Not specified",
             path = resultA.RequestMessage?.RequestUri?.PathAndQuery,
             method = resultA.RequestMessage?.Method.Method,
-            requestData = resultA?.RequestMessage?.Content?.ToString()?? "",
+            requestData = requestData?.ToString() ?? "",
             ResultAStatusCode = (int)resultA?.StatusCode ,
             ResultBStatusCode = (int)resultB.StatusCode,
             ResultA = resultA.Content.ToString()?? "",
@@ -230,27 +230,26 @@ public class ApiTester
     /// </summary>
     /// <returns>A dictionary of test results for each endpoint</returns>
     public async Task<Dictionary<string, ComparisonResult>> RunTestSuiteAsync(
-        Dictionary<(string Endpoint, HttpMethod Method, object? Data), string> tests)
+        List<TestApiDetails> testSuits)
     {
         var results = new Dictionary<string, ComparisonResult>();
         
-        foreach (var test in tests)
+        foreach (var test in testSuits)
         {
-            var key = test.Key;
-            var testName = test.Value;
+            var testName = test.TestName;
             
             Console.WriteLine($"Running test: {testName}");
             
             try
             {
-                var result = key.Method switch
+                var result = test.Method switch
                 {
-                    HttpMethod m when m == HttpMethod.Get => await TestGetAsync(key.Endpoint),
-                    HttpMethod m when m == HttpMethod.Post => await TestPostAsync(key.Endpoint, key.Data!),
-                    HttpMethod m when m == HttpMethod.Put => await TestPutAsync(key.Endpoint, key.Data!),
-                    HttpMethod m when m == HttpMethod.Patch => await TestPatchAsync(key.Endpoint, key.Data!),
-                    HttpMethod m when m == HttpMethod.Delete => await TestDeleteAsync(key.Endpoint),
-                    _ => throw new ArgumentException($"Unsupported HTTP method: {key.Method}")
+                    HttpMethod m when m == HttpMethod.Get => await TestGetAsync(test.Endpoint),
+                    HttpMethod m when m == HttpMethod.Post => await TestPostAsync(test.Endpoint, test.Data),
+                    HttpMethod m when m == HttpMethod.Put => await TestPutAsync(test.Endpoint, test.Data),
+                    HttpMethod m when m == HttpMethod.Patch => await TestPatchAsync(test.Endpoint, test.Data),
+                    HttpMethod m when m == HttpMethod.Delete => await TestDeleteAsync(test.Endpoint),
+                    _ => throw new ArgumentException($"Unsupported HTTP method: {test.Method}")
                 };
                 
                 // Set the test name in the comparison result
