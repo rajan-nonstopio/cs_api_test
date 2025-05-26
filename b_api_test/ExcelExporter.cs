@@ -118,7 +118,7 @@ public static class ExcelExporter
             worksheet.Cells[15, 2].Value = avgTimeDiff;
             worksheet.Cells[15, 2].Style.Numberformat.Format = "0.00 \"ms\"";
             
-            // Set color based on difference (green if A is faster, red if B is faster)
+            // Set color based on difference (green if A is faster, red if B it is faster)
             if (avgTimeDiff < 0)
             {
                 worksheet.Cells[15, 2].Style.Font.Color.SetColor(Color.Green);
@@ -268,7 +268,7 @@ public static class ExcelExporter
             }
 
             // Request/Response bodies
-            worksheet.Cells[row, 10].Value = comparison.requestBodyA;
+            worksheet.Cells[row, 10].Value = comparison.requestData;
             worksheet.Cells[row, 10].Style.WrapText = true;
 
             worksheet.Cells[row, 11].Value = comparison.ResultASummary;

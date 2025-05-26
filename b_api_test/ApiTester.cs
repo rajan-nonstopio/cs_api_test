@@ -165,9 +165,8 @@ public class ApiTester
             TestName = "Not specified",
             path = resultA.RequestMessage?.RequestUri?.PathAndQuery,
             method = resultA.RequestMessage?.Method.Method,
-            requestBodyA = await resultA.Content.ReadAsStringAsync(),
-            requestBodyB = await resultB.Content.ReadAsStringAsync(),
-            ResultAStatusCode = (int)resultA.StatusCode,
+            requestData = resultA?.RequestMessage?.Content?.ToString()?? "",
+            ResultAStatusCode = (int)resultA?.StatusCode ,
             ResultBStatusCode = (int)resultB.StatusCode,
             ResultA = resultA.Content.ToString()?? "",
             ResultB = resultB.Content.ToString()?? ""
@@ -333,9 +332,7 @@ public class ComparisonResult
     
     public string? method { get; set; } = string.Empty;
     
-    public string requestBodyA { get; set; } = string.Empty;
-    
-    public string requestBodyB { get; set; } = string.Empty;
+    public string? requestData { get; set; } = string.Empty;
     
     /// <summary>
     /// List of specific differences between results
@@ -358,10 +355,8 @@ public class ComparisonResult
         details.AppendLine($"API Path: {path}");
         details.AppendLine($"Method: {method}");
         details.AppendLine();
-        details.AppendLine("Request Body A:");
-        details.AppendLine(requestBodyA);
-        details.AppendLine("Request Body B:");
-        details.AppendLine(requestBodyB);
+        details.AppendLine("Request Data A:");
+        details.AppendLine(requestData);
         details.AppendLine();
         details.AppendLine("Full Results:");
         details.AppendLine($"Response A: {ResultA}");
