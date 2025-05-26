@@ -1,0 +1,14 @@
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/bin/Debug/net8.0/b_api_test
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/bin/Debug/net8.0/b_api_test.deps.json
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/bin/Debug/net8.0/b_api_test.runtimeconfig.json
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/bin/Debug/net8.0/b_api_test.dll
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/bin/Debug/net8.0/b_api_test.pdb
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/obj/Debug/net8.0/b_api_test.GeneratedMSBuildEditorConfig.editorconfig
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/obj/Debug/net8.0/b_api_test.AssemblyInfoInputs.cache
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/obj/Debug/net8.0/b_api_test.AssemblyInfo.cs
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/obj/Debug/net8.0/b_api_test.csproj.CoreCompileInputs.cache
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/obj/Debug/net8.0/b_api_test.dll
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/obj/Debug/net8.0/refint/b_api_test.dll
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/obj/Debug/net8.0/b_api_test.pdb
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/obj/Debug/net8.0/b_api_test.genruntimeconfig.cache
+/Users/rajametaliya/work/dotnet/Baylor/b_api_test/b_api_test/obj/Debug/net8.0/ref/b_api_test.dll
