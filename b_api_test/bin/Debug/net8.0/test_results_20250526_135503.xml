@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestResults timestamp="2025-05-26T08:25:03.7323170Z" total="2">
+  <Summary>
+    <SuccessCount>2</SuccessCount>
+    <FailureCount>0</FailureCount>
+    <SuccessRate>100.00%</SuccessRate>
+    <AverageTimings>
+      <ServiceA>461.00ms</ServiceA>
+      <ServiceB>414.50ms</ServiceB>
+      <Difference>46.50ms</Difference>
+    </AverageTimings>
+  </Summary>
+  <Tests>
+    <Test name="Test API" success="true">
+      <Timings>
+        <ServiceA>769</ServiceA>
+        <ServiceB>668</ServiceB>
+        <Difference>101</Difference>
+      </Timings>
+      <StatusCodes>
+        <ServiceA>200</ServiceA>
+        <ServiceB>200</ServiceB>
+      </StatusCodes>
+      <Response>
+        <ServiceA>{
+  "userId": 1,
+  "id": 1,
+  "title": "delectus aut autem",
+  "completed": false
+}</ServiceA>
+        <ServiceB>{
+  "userId": 1,
+  "id": 1,
+  "title": "delectus aut autem",
+  "completed": false
+}</ServiceB>
+      </Response>
+    </Test>
+    <Test name="Get Post" success="true">
+      <Timings>
+        <ServiceA>153</ServiceA>
+        <ServiceB>161</ServiceB>
+        <Difference>-8</Difference>
+      </Timings>
+      <StatusCodes>
+        <ServiceA>200</ServiceA>
+        <ServiceB>200</ServiceB>
+      </StatusCodes>
+      <Response>
+        <ServiceA>{
+  "userId": 1,
+  "id": 1,
+  "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+  "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
+}</ServiceA>
+        <ServiceB>{
+  "userId": 1,
+  "id": 1,
+  "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+  "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
+}</ServiceB>
+      </Response>
+    </Test>
+  </Tests>
+</TestResults>

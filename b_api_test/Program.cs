@@ -4,18 +4,19 @@ using b_api_test;
 
 Console.WriteLine("API Service Example");
 
-
+const string baseUrl1 = "https://api.restful-api.dev/";
+const string baseUrl2 = "https://api.restful-api.dev/";
 
 // Example of using ApiTester with two different API service configurations
 var tester = new ApiTester(
     // Configure the first API service (Service A)
     serviceA => serviceA
-        .SetBaseUrl("https://api.restful-api.dev/"),
+        .SetBaseUrl(baseUrl1),
 
         
     // Configure a second API service (Service B)
     serviceB => serviceB
-        .SetBaseUrl("https://api.restful-api.dev/")
+        .SetBaseUrl(baseUrl2)
 );
 
 // Example of running tests (commented out since they would try to execute)
@@ -39,7 +40,7 @@ Console.WriteLine("----------|----------|----------|--------|--------|----------
 
 foreach (var result in results)
 {
-    Console.WriteLine(result.Value.Comparison.ToString(includeDetails: false));
+    Console.WriteLine(result.Value.ToString(includeDetails: true));
 }
 // Get file paths for exports
 var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
@@ -54,13 +55,8 @@ Console.WriteLine($"Root directory: {rootDirectory}");
 
 
 // Export test results to Excel
-if (ExcelExporter.ExportToExcel(results, excelFilePath))
-{
-    Console.WriteLine($"Excel report generated: {excelFilePath}");
-}
-else
-{
-    Console.WriteLine("Failed to export test results to Excel");
-}
+Console.WriteLine(ExcelExporter.ExportToExcel(results, baseUrl1, baseUrl2, excelFilePath)
+    ? $"Excel report generated: {excelFilePath}"
+    : "Failed to export test results to Excel");
 
 Console.WriteLine("\nAPI Service and ApiTester configured successfully!");

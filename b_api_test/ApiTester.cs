@@ -31,7 +31,7 @@ public class ApiTester
     /// </summary>
     /// <param name="endpoint">The API endpoint to test</param>
     /// <returns>A tuple containing the results from both services and comparison metrics</returns>
-    private async Task<(System.Net.Http.HttpResponseMessage ResultA, System.Net.Http.HttpResponseMessage ResultB, ComparisonResult Comparison)> TestGetAsync(string endpoint)
+    private async Task<ComparisonResult> TestGetAsync(string endpoint)
     {
         Console.WriteLine($"Testing GET request to endpoint: {endpoint}");
         
@@ -46,7 +46,7 @@ public class ApiTester
         var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds);
         DisplayComparisonResults(comparison);
         
-        return (resultA, resultB, comparison);
+        return comparison;
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class ApiTester
     /// <param name="endpoint">The API endpoint to test</param>
     /// <param name="data">The data to send in the request body</param>
     /// <returns>A tuple containing the results from both services and comparison metrics</returns>
-    private async Task<(System.Net.Http.HttpResponseMessage? ResultA, System.Net.Http.HttpResponseMessage? ResultB, ComparisonResult Comparison)> TestPostAsync(string endpoint, object data)
+    private async Task<ComparisonResult>  TestPostAsync(string endpoint, object data)
     {
         Console.WriteLine($"Testing POST request to endpoint: {endpoint}");
         
@@ -70,7 +70,7 @@ public class ApiTester
         var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds);
         DisplayComparisonResults(comparison);
         
-        return (resultA, resultB, comparison);
+        return comparison;
     }
     
     /// <summary>
@@ -79,7 +79,7 @@ public class ApiTester
     /// <param name="endpoint">The API endpoint to test</param>
     /// <param name="data">The data to send in the request body</param>
     /// <returns>A tuple containing the results from both services and comparison metrics</returns>
-    private async Task<(System.Net.Http.HttpResponseMessage? ResultA, System.Net.Http.HttpResponseMessage? ResultB, ComparisonResult Comparison)> TestPutAsync(string endpoint, object data)
+    private async  Task<ComparisonResult>  TestPutAsync(string endpoint, object data)
     {
         Console.WriteLine($"Testing PUT request to endpoint: {endpoint}");
         
@@ -94,7 +94,7 @@ public class ApiTester
         var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds);
         DisplayComparisonResults(comparison);
         
-        return (resultA, resultB, comparison);
+        return comparison;
     }
 
     /// <summary>
@@ -103,7 +103,7 @@ public class ApiTester
     /// <param name="endpoint">The API endpoint to test</param>
     /// <param name="data">The data to send in the request body</param>
     /// <returns>A tuple containing the results from both services and comparison metrics</returns>
-    private async Task<(System.Net.Http.HttpResponseMessage? ResultA, System.Net.Http.HttpResponseMessage? ResultB, ComparisonResult Comparison)> TestPatchAsync(string endpoint, object data)
+    private async  Task<ComparisonResult>  TestPatchAsync(string endpoint, object data)
     {
         Console.WriteLine($"Testing PATCH request to endpoint: {endpoint}");
         
@@ -118,7 +118,7 @@ public class ApiTester
         var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds);
         DisplayComparisonResults(comparison);
         
-        return (resultA, resultB, comparison);
+        return comparison;
     }
     
     /// <summary>
@@ -127,7 +127,7 @@ public class ApiTester
     /// <typeparam name="HttpResponseMessage">The type to deserialize the response to</typeparam>
     /// <param name="endpoint">The API endpoint to test</param>
     /// <returns>A tuple containing the results from both services and comparison metrics</returns>
-    private async Task<(System.Net.Http.HttpResponseMessage? ResultA, System.Net.Http.HttpResponseMessage? ResultB, ComparisonResult Comparison)> TestDeleteAsync(string endpoint)
+    private async  Task<ComparisonResult>  TestDeleteAsync(string endpoint)
     {
         Console.WriteLine($"Testing DELETE request to endpoint: {endpoint}");
         
@@ -142,7 +142,7 @@ public class ApiTester
         var comparison = await CompareResults(resultA, resultB, stopwatchA.ElapsedMilliseconds, stopwatchB.ElapsedMilliseconds);
         DisplayComparisonResults(comparison);
         
-        return (resultA, resultB, comparison);
+        return  comparison;
     }
     
     /// <summary>
@@ -154,7 +154,7 @@ public class ApiTester
     /// <param name="timeA">The time taken by the first API service in milliseconds</param>
     /// <param name="timeB">The time taken by the second API service in milliseconds</param>
     /// <returns>A comparison result object</returns>
-    private async Task<ComparisonResult> CompareResults(System.Net.Http.HttpResponseMessage resultA, System.Net.Http.HttpResponseMessage resultB, long timeA, long timeB) 
+    private static async Task<ComparisonResult> CompareResults(System.Net.Http.HttpResponseMessage resultA, System.Net.Http.HttpResponseMessage resultB, long timeA, long timeB) 
     {
 
         
@@ -165,6 +165,10 @@ public class ApiTester
             TimeDifference = timeA - timeB,
             ResultsEqual = false,
             TestName = "Not specified",
+            path = resultA.RequestMessage.RequestUri.PathAndQuery,
+            method = resultA.RequestMessage.Method.Method,
+            requestBodyA = await resultA.Content.ReadAsStringAsync(),
+            requestBodyB = await resultB.Content.ReadAsStringAsync(),
             ResultAStatusCode = resultA.StatusCode != null ? (int)resultA.StatusCode : 0,
             ResultBStatusCode = resultB.StatusCode != null ? (int)resultB.StatusCode : 0,
             ResultA = resultA.Content.ToString(),
@@ -214,7 +218,7 @@ public class ApiTester
     /// Displays the comparison results
     /// </summary>
     /// <param name="comparison">The comparison result</param>
-    private void DisplayComparisonResults(ComparisonResult comparison)
+    private static void DisplayComparisonResults(ComparisonResult comparison)
     {
         Console.WriteLine("Comparison Results:");
         Console.WriteLine($"Service A time: {comparison.TimeA} ms");
@@ -230,10 +234,10 @@ public class ApiTester
     /// <typeparam name="HttpResponseMessage">The type to deserialize the responses to</typeparam>
     /// <param name="endpoints">Dictionary of endpoints to test with their corresponding request data</param>
     /// <returns>A dictionary of test results for each endpoint</returns>
-    public async Task<Dictionary<string, (System.Net.Http.HttpResponseMessage ResultA, System.Net.Http.HttpResponseMessage ResultB, ComparisonResult Comparison)>> RunTestSuiteAsync(
+    public async Task<Dictionary<string, ComparisonResult>> RunTestSuiteAsync(
         Dictionary<(string Endpoint, HttpMethod Method, object? Data), string> tests)
     {
-        var results = new Dictionary<string, (System.Net.Http.HttpResponseMessage? ResultA, System.Net.Http.HttpResponseMessage? ResultB, ComparisonResult Comparison)>();
+        var results = new Dictionary<string, ComparisonResult>();
         
         foreach (var test in tests)
         {
@@ -244,7 +248,7 @@ public class ApiTester
             
             try
             {
-                (System.Net.Http.HttpResponseMessage? ResultA, System.Net.Http.HttpResponseMessage? ResultB, ComparisonResult Comparison) result = key.Method switch
+                ComparisonResult result = key.Method switch
                 {
                     HttpMethod m when m == HttpMethod.Get => await TestGetAsync(key.Endpoint),
                     HttpMethod m when m == HttpMethod.Post => await TestPostAsync(key.Endpoint, key.Data!),
@@ -255,7 +259,7 @@ public class ApiTester
                 };
                 
                 // Set the test name in the comparison result
-                result.Comparison.TestName = testName;
+                result.TestName = testName;
                 
                 results.Add(testName, result);
             }
@@ -329,14 +333,20 @@ public class ComparisonResult
     /// </summary>
     public string ResultB { get; set; } = string.Empty;
     
+    public string path { get; set; } = string.Empty;
+    
+    public string method { get; set; } = string.Empty;
+    
+    public string requestBodyA { get; set; } = string.Empty;
+    
+    public string requestBodyB { get; set; } = string.Empty;
+    
     /// <summary>
     /// List of specific differences between results
     /// </summary>
     public List<string> Differences { get; set; } = new List<string>();
     
-    /// <summary>
-    /// Returns a string representation of the comparison result
-    /// </summary>
+    
     public string ToString(bool includeDetails = false)
     {
         var equalityStatus = ResultsEqual ? "✓ Equal" : "✗ Different"; 
@@ -349,12 +359,21 @@ public class ComparisonResult
             
         var details = new StringBuilder(basicInfo);
         details.AppendLine();
+        details.AppendLine($"API Path: {path}");
+        details.AppendLine($"Method: {method}");
+        details.AppendLine();
+        details.AppendLine("Request Body A:");
+        details.AppendLine(requestBodyA);
+        details.AppendLine("Request Body B:");
+        details.AppendLine(requestBodyB);
+        details.AppendLine();
         details.AppendLine("Full Results:");
-        details.AppendLine($"A: {ResultA}");
-        details.AppendLine($"B: {ResultB}");
+        details.AppendLine($"Response A: {ResultA}");
+        details.AppendLine($"Response B: {ResultB}");
         
         if (Differences.Any())
         {
+            details.AppendLine();
             details.AppendLine("Differences:");
             foreach (var diff in Differences)
             {
