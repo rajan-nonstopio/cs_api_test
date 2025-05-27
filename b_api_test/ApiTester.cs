@@ -152,93 +152,101 @@ public class ApiTester
     /// <param name="timeA">The time taken by the first API service in milliseconds</param>
     /// <param name="timeB">The time taken by the second API service in milliseconds</param>
     /// <returns>A comparison result object</returns>
-    private static async Task<ComparisonResult> CompareResults(HttpResponseMessage resultA, HttpResponseMessage resultB, long timeA, long timeB, object? requestData) 
+private static async Task<ComparisonResult> CompareResults(HttpResponseMessage resultA, HttpResponseMessage resultB, long timeA, long timeB, object? requestData)
+{
+    var isJsonA = resultA.Content.Headers.ContentType?.MediaType?.Contains("json", StringComparison.OrdinalIgnoreCase) == true;
+    var isJsonB = resultB.Content.Headers.ContentType?.MediaType?.Contains("json", StringComparison.OrdinalIgnoreCase) == true;
+
+    var statusCodeA = (int)resultA.StatusCode;
+    var statusCodeB = (int)resultB.StatusCode;
+
+    var rawContentA = await resultA.Content.ReadAsStringAsync();
+    var rawContentB = await resultB.Content.ReadAsStringAsync();
+
+    string contentA = isJsonA ? MinifyJson(rawContentA) : "Need Manual Comparison";
+    string contentB = isJsonB ? MinifyJson(rawContentB) : "Need Manual Comparison";
+
+    var resultAContent = contentA.Length > 300 ? contentA.Substring(0, 300) + "..." : contentA;
+    var resultBContent = contentB.Length > 300 ? contentB.Substring(0, 300) + "..." : contentB;
+
+    var result = new ComparisonResult
     {
-        var isJsonA = resultA.Content.Headers.ContentType?.MediaType?.Contains("json", StringComparison.OrdinalIgnoreCase) == true;
-        var isJsonB = resultB.Content.Headers.ContentType?.MediaType?.Contains("json", StringComparison.OrdinalIgnoreCase) == true;
+        TimeA = timeA,
+        TimeB = timeB,
+        TimeDifference = timeA - timeB,
+        ResultsEqual = ComparisonStatus.Error,
+        TestName = "Not specified",
+        path = resultA.RequestMessage?.RequestUri?.PathAndQuery,
+        method = resultA.RequestMessage?.Method.Method,
+        requestData = requestData?.ToString() ?? "",
+        ResultAStatusCode = statusCodeA,
+        ResultBStatusCode = statusCodeB,
+        ResultA = contentA,
+        ResultB = contentB,
+        ResultASummary = resultAContent,
+        ResultBSummary = resultBContent
+    };
 
-        var statusCodeA = (int)resultA.StatusCode;
-        var statusCodeB = (int)resultB.StatusCode;
-
-        var contentA = isJsonA ? await resultA.Content.ReadAsStringAsync() : "Need Manual Comparison";
-        var contentB = isJsonB ? await resultB.Content.ReadAsStringAsync() : "Need Manual Comparison";
-
-        var resultAContent = contentA.Length > 300 ? contentA.Substring(0, 300) + "..." : contentA;
-        var resultBContent = contentB.Length > 300 ? contentB.Substring(0, 300) + "..." : contentB;
-
-        var result = new ComparisonResult
-        {
-            TimeA = timeA,
-            TimeB = timeB,
-            TimeDifference = timeA - timeB,
-            ResultsEqual = ComparisonStatus.Error,
-            TestName = "Not specified",
-            path = resultA.RequestMessage?.RequestUri?.PathAndQuery,
-            method = resultA.RequestMessage?.Method.Method,
-            requestData = requestData?.ToString() ?? "",
-            ResultAStatusCode = statusCodeA,
-            ResultBStatusCode = statusCodeB,
-            ResultA = resultAContent,
-            ResultB = resultBContent
-        };
-
-        // Default status
-        result.ResultsEqual = ComparisonStatus.Different;
-
-        // If not JSON, require manual testing
-        if (!isJsonA || !isJsonB)
-        {
-            result.ResultASummary = contentA;
-            result.ResultBSummary = contentB;
-            result.Differences.Add("At least one response is not JSON; skipping comparison.");
-            result.ResultsEqual = ComparisonStatus.Manual;
-            return result;
-        }
-
-        // If the status code is not 200-205, mark as error
-        bool isSuccessA = statusCodeA >= 200 && statusCodeA <= 205;
-        bool isSuccessB = statusCodeB >= 200 && statusCodeB <= 205;
-        if (!isSuccessA || !isSuccessB)
-        {
-            result.ResultASummary = contentA;
-            result.ResultBSummary = contentB;
-            result.Differences.Add($"At least one response returned error status code: {statusCodeA}, {statusCodeB}");
-            result.ResultsEqual = ComparisonStatus.Error;
-            return result;
-        }
-
-        try
-        {
-            // Try to parse as JSON to do a structured comparison
-            var jsonA = JsonSerializer.Deserialize<JsonElement>(contentA);
-            var jsonB = JsonSerializer.Deserialize<JsonElement>(contentB);
-
-            var serializedA = JsonSerializer.Serialize(jsonA);
-            var serializedB = JsonSerializer.Serialize(jsonB);
-            result.ResultsEqual = serializedA == serializedB ? ComparisonStatus.Equal : ComparisonStatus.Different;
-            result.ResultA = contentA;
-            result.ResultB = contentB;
-            result.ResultASummary = contentA.Length > 100 ? contentA[..100] + "..." : contentA;
-            result.ResultBSummary = contentB.Length > 100 ? contentB[..100] + "..." : contentB;
-
-            if (result.ResultsEqual == ComparisonStatus.Different)
-            {
-                result.ResultsEqual = ComparisonStatus.Different;
-                result.Differences.Add($"JSON content differs between responses");
-            }
-        }
-        catch
-        {
-            // If JSON parsing fails, treat as different
-            result.ResultASummary = contentA;
-            result.ResultBSummary = contentB;
-            result.Differences.Add($"Failed to parse JSON in one or both responses");
-            result.ResultsEqual = ComparisonStatus.Error;
-        }
-
+    if (!isJsonA || !isJsonB)
+    {
+        result.Differences.Add("At least one response is not JSON; skipping comparison.");
+        result.ResultsEqual = ComparisonStatus.Manual;
         return result;
     }
-    
+
+    bool isSuccessA = statusCodeA is >= 200 and <= 205;
+    bool isSuccessB = statusCodeB is >= 200 and <= 205;
+    if (!isSuccessA || !isSuccessB)
+    {
+
+        result.Differences.Add($"At least one response returned error status code: {statusCodeA}, {statusCodeB}");
+        result.ResultsEqual = ComparisonStatus.Error;
+        return result;
+    }
+
+    try
+    {
+        result.ResultsEqual = CompareJson(contentA, contentB) ? ComparisonStatus.Equal : ComparisonStatus.Different;
+
+        if (result.ResultsEqual == ComparisonStatus.Different)
+        {
+            result.Differences.Add($"JSON content differs between responses");
+        }
+    }
+    catch
+    {
+
+        result.Differences.Add($"Failed to parse JSON in one or both responses");
+        result.ResultsEqual = ComparisonStatus.Error;
+    }
+
+    return result;
+}
+
+private static bool CompareJson(string contentA, string contentB)
+{
+    var jsonA = JsonSerializer.Deserialize<JsonElement>(contentA);
+    var jsonB = JsonSerializer.Deserialize<JsonElement>(contentB);
+
+    var serializedA = JsonSerializer.Serialize(jsonA, new JsonSerializerOptions { WriteIndented = false });
+    var serializedB = JsonSerializer.Serialize(jsonB, new JsonSerializerOptions { WriteIndented = false });
+    return serializedA.Trim() == serializedB.Trim();
+}
+
+// Utility function to minify JSON
+private static string MinifyJson(string json)
+{
+    try
+    {
+        var parsed = JsonSerializer.Deserialize<JsonElement>(json);
+        return JsonSerializer.Serialize(parsed, new JsonSerializerOptions { WriteIndented = false });
+    }
+    catch
+    {
+        return json; // Return original if parsing fails
+    }
+}
+
     /// <summary>
     /// Displays the comparison results
     /// </summary>

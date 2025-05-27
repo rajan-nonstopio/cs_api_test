@@ -273,10 +273,10 @@ public static class ExcelExporter
             worksheet.Cells[row, 10].Value = comparison.requestData;
             worksheet.Cells[row, 10].Style.WrapText = true;
 
-            worksheet.Cells[row, 11].Value = comparison.ResultASummary;
+            worksheet.Cells[row, 11].Value = comparison.ResultA;
             worksheet.Cells[row, 11].Style.WrapText = true;
 
-            worksheet.Cells[row, 12].Value = comparison.ResultBSummary;
+            worksheet.Cells[row, 12].Value = comparison.ResultB;
             worksheet.Cells[row, 12].Style.WrapText = true;
             
             // Details (differences)
@@ -367,11 +367,11 @@ public static class ExcelExporter
             FormatStatusCodeCell(worksheet.Cells[row, 5], comparison.ResultBStatusCode);
             worksheet.Cells[row, 5].Style.Border.BorderAround(ExcelBorderStyle.Thin);
             
-            worksheet.Cells[row, 6].Value = comparison.ResultASummary;
+            worksheet.Cells[row, 6].Value = comparison.ResultA;
             worksheet.Cells[row, 6].Style.WrapText = true;
             worksheet.Cells[row, 6].Style.Border.BorderAround(ExcelBorderStyle.Thin);
             
-            worksheet.Cells[row, 7].Value = comparison.ResultBSummary;
+            worksheet.Cells[row, 7].Value = comparison.ResultB;
             worksheet.Cells[row, 7].Style.WrapText = true;
             worksheet.Cells[row, 7].Style.Border.BorderAround(ExcelBorderStyle.Thin);
             
