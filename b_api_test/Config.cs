@@ -3,7 +3,7 @@ namespace b_api_test;
 public static class Config
 {
     public static string BaseUrl1 => "https://api-qa.baylorgenetics.com";
-    public static string BaseUrl2 => "https://sample-management-api-qa.baylorgenetics.com";
+    public static string BaseUrl2 => "https://report-management-api-qa.baylorgenetics.com";
 
     private static string token1 => "";
 
@@ -11,41 +11,35 @@ public static class Config
     
     public static List<TestApiDetails> testSuite => [
       new TestApiDetails  {
-            TestName = "Client Custom panels",
+            TestName = "LIMS Reports Report by {hospitalCode}/{id}",
             Method = HttpMethod.Get,
-            Endpoint = "/api/clientTestCodes/custom-panel?hospitalCode=NISC&preCarveOutTestCode=24001",
-          
+            Endpoint = "/api/lims/reports/NISC/8691092",
+
         },
       new TestApiDetails
       {
-          TestName = "Client Test code",
+          TestName = "LIMS Reports by Report {id}",
           Method = HttpMethod.Get,
-          Endpoint = "/api/clientTestCodes/code/24001",
+          Endpoint = "/api/lims/reports/8691092",
       },
       new  TestApiDetails
       {
-          TestName ="Get Client Test codes" ,
+          TestName ="LIMS Reports Signature" ,
           Method = HttpMethod.Get,
-          Endpoint = "/api/clientTestCodes?clientTestcode=NISC-24001-P2-1",
+          Endpoint = "/api/Reports/signature?userId=muh0711%40BaylorGenetics.com&labId=DNA",
       },
-      new TestApiDetails {
-        TestName = "Create client test code",
-        Method = HttpMethod.Post,
-        Endpoint = "api/clientTestCodes",
-        Data =  new
-        {
-            name = "ANISC-24001-P2-17761",
-            hospitalCode = "NISC", 
-            reportName = "POST TEST API name",
-            processorName = "GANateraProcessor",
-            testCode = 24001,
-            billingCode = "PRPN",
-            genes = new[]
-            {
-                "EPCAM",
-                "MLH1"
-            }
-        }
+
+      new  TestApiDetails
+      {
+          TestName ="LIMS Reports Signature Preview" ,
+          Method = HttpMethod.Get,
+          Endpoint = "/api/Reports/preview?userId=muh0711%40BaylorGenetics.com&sampleId=8687874",
+      },
+      new  TestApiDetails
+      {
+          TestName ="LIMS Reports templates" ,
+          Method = HttpMethod.Get,
+          Endpoint = "/api/Reports/templates?templateType=Interpretation",
       }
     ];
     

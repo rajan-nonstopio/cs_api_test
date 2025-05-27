@@ -81,7 +81,7 @@ public static class ExcelExporter
         worksheet.Cells[7, 1].Value = "Total Tests:";
         worksheet.Cells[7, 2].Value = results.Count;
         
-        var successCount = results.Count(r => r.Value.ResultsEqual);
+        var successCount = results.Count(r => r.Value.ResultsEqual == ComparisonStatus.Equal);
         var failureCount = results.Count - successCount;
         
         worksheet.Cells[8, 1].Value = "Successful Tests:";
@@ -118,7 +118,7 @@ public static class ExcelExporter
             worksheet.Cells[15, 2].Value = avgTimeDiff;
             worksheet.Cells[15, 2].Style.Numberformat.Format = "0.00 \"ms\"";
             
-            // Set color based on difference (green if A is faster, red if B it is faster)
+            // Set color based on difference (green if A is faster, red of B it is faster)
             if (avgTimeDiff < 0)
             {
                 worksheet.Cells[15, 2].Style.Font.Color.SetColor(Color.Green);
@@ -153,8 +153,9 @@ public static class ExcelExporter
             worksheet.Cells[row, 1].Value = testName;
             worksheet.Cells[row, 2].Value = comparison.path;
             
-            worksheet.Cells[row, 3].Value = comparison.ResultsEqual ? "Success" : "Failure";
-            worksheet.Cells[row, 3].Style.Font.Color.SetColor(comparison.ResultsEqual ? Color.Green : Color.Red);
+            worksheet.Cells[row, 3].Value = comparison.ResultsEqual.ToString();
+            worksheet.Cells[row, 3].Style.Font.Color
+                .SetColor(ComparisonStatusExtensions.GetColor(comparison.ResultsEqual));
             
             worksheet.Cells[row, 4].Value = comparison.ResultAStatusCode;
             FormatStatusCodeCell(worksheet.Cells[row, 4], comparison.ResultAStatusCode);
@@ -244,7 +245,8 @@ public static class ExcelExporter
             
             // Equal status with color coding
             worksheet.Cells[row, 4].Value = comparison.ResultsEqual;
-            worksheet.Cells[row, 4].Style.Font.Color.SetColor(comparison.ResultsEqual ? Color.Green : Color.Red);
+            worksheet.Cells[row, 4].Style.Font.Color
+                .SetColor(ComparisonStatusExtensions.GetColor(comparison.ResultsEqual));
             
             // Status codes
             worksheet.Cells[row, 5].Value = comparison.ResultAStatusCode;

@@ -154,60 +154,88 @@ public class ApiTester
     /// <returns>A comparison result object</returns>
     private static async Task<ComparisonResult> CompareResults(HttpResponseMessage resultA, HttpResponseMessage resultB, long timeA, long timeB, object? requestData) 
     {
+        var isJsonA = resultA.Content.Headers.ContentType?.MediaType?.Contains("json", StringComparison.OrdinalIgnoreCase) == true;
+        var isJsonB = resultB.Content.Headers.ContentType?.MediaType?.Contains("json", StringComparison.OrdinalIgnoreCase) == true;
 
-        
+        var statusCodeA = (int)resultA.StatusCode;
+        var statusCodeB = (int)resultB.StatusCode;
+
+        var contentA = isJsonA ? await resultA.Content.ReadAsStringAsync() : "Need Manual Comparison";
+        var contentB = isJsonB ? await resultB.Content.ReadAsStringAsync() : "Need Manual Comparison";
+
+        var resultAContent = contentA.Length > 300 ? contentA.Substring(0, 300) + "..." : contentA;
+        var resultBContent = contentB.Length > 300 ? contentB.Substring(0, 300) + "..." : contentB;
+
         var result = new ComparisonResult
         {
             TimeA = timeA,
             TimeB = timeB,
             TimeDifference = timeA - timeB,
-            ResultsEqual = false,
+            ResultsEqual = ComparisonStatus.Error,
             TestName = "Not specified",
             path = resultA.RequestMessage?.RequestUri?.PathAndQuery,
             method = resultA.RequestMessage?.Method.Method,
             requestData = requestData?.ToString() ?? "",
-            ResultAStatusCode = (int)resultA?.StatusCode ,
-            ResultBStatusCode = (int)resultB.StatusCode,
-            ResultA = resultA.Content.ToString()?? "",
-            ResultB = resultB.Content.ToString()?? ""
+            ResultAStatusCode = statusCodeA,
+            ResultBStatusCode = statusCodeB,
+            ResultA = resultAContent,
+            ResultB = resultBContent
         };
-        
-        // Compare content of the two ResultA and ResultB
-        var contentA = await resultA.Content.ReadAsStringAsync();
-        var contentB = await resultB.Content.ReadAsStringAsync();
-        
+
+        // Default status
+        result.ResultsEqual = ComparisonStatus.Different;
+
+        // If not JSON, require manual testing
+        if (!isJsonA || !isJsonB)
+        {
+            result.ResultASummary = contentA;
+            result.ResultBSummary = contentB;
+            result.Differences.Add("At least one response is not JSON; skipping comparison.");
+            result.ResultsEqual = ComparisonStatus.Manual;
+            return result;
+        }
+
+        // If the status code is not 200-205, mark as error
+        bool isSuccessA = statusCodeA >= 200 && statusCodeA <= 205;
+        bool isSuccessB = statusCodeB >= 200 && statusCodeB <= 205;
+        if (!isSuccessA || !isSuccessB)
+        {
+            result.ResultASummary = contentA;
+            result.ResultBSummary = contentB;
+            result.Differences.Add($"At least one response returned error status code: {statusCodeA}, {statusCodeB}");
+            result.ResultsEqual = ComparisonStatus.Error;
+            return result;
+        }
+
         try
         {
             // Try to parse as JSON to do a structured comparison
             var jsonA = JsonSerializer.Deserialize<JsonElement>(contentA);
             var jsonB = JsonSerializer.Deserialize<JsonElement>(contentB);
-        
-            result.ResultsEqual = JsonSerializer.Serialize(jsonA) == JsonSerializer.Serialize(jsonB);
+
+            var serializedA = JsonSerializer.Serialize(jsonA);
+            var serializedB = JsonSerializer.Serialize(jsonB);
+            result.ResultsEqual = serializedA == serializedB ? ComparisonStatus.Equal : ComparisonStatus.Different;
             result.ResultA = contentA;
             result.ResultB = contentB;
             result.ResultASummary = contentA.Length > 100 ? contentA[..100] + "..." : contentA;
             result.ResultBSummary = contentB.Length > 100 ? contentB[..100] + "..." : contentB;
-        
-            if (!result.ResultsEqual)
+
+            if (result.ResultsEqual == ComparisonStatus.Different)
             {
+                result.ResultsEqual = ComparisonStatus.Different;
                 result.Differences.Add($"JSON content differs between responses");
             }
         }
         catch
         {
-            // Fall back to direct string comparison if not valid JSON
-            result.ResultsEqual = contentA == contentB;
-            result.ResultA = contentA;
-            result.ResultB = contentB;
+            // If JSON parsing fails, treat as different
             result.ResultASummary = contentA;
             result.ResultBSummary = contentB;
-        
-            if (!result.ResultsEqual)
-            {
-                result.Differences.Add($"Response content differs");
-            }
+            result.Differences.Add($"Failed to parse JSON in one or both responses");
+            result.ResultsEqual = ComparisonStatus.Error;
         }
-   
+
         return result;
     }
     
@@ -295,7 +323,7 @@ public class ComparisonResult
     /// <summary>
     /// Whether the results from both services are equal
     /// </summary>
-    public bool ResultsEqual { get; set; }
+    public ComparisonStatus ResultsEqual { get; set; }
     
     /// <summary>
     /// Status description of result A (null, has value, etc.)
@@ -341,7 +369,7 @@ public class ComparisonResult
     
     public string ToString(bool includeDetails = false)
     {
-        var equalityStatus = ResultsEqual ? "✓ Equal" : "✗ Different"; 
+        var equalityStatus = ResultsEqual.ToString();
         var timeDiffStr = TimeDifference >= 0 ? $"+{TimeDifference}" : TimeDifference.ToString();
         
         var basicInfo = $"{TestName} | {ResultAStatusCode} | {ResultBStatusCode} | {TimeA}ms | {TimeB}ms | {timeDiffStr}ms | {equalityStatus}";
@@ -370,7 +398,32 @@ public class ComparisonResult
                 details.AppendLine($"- {diff}");
             }
         }
-        
+
         return details.ToString();
+    }
+}
+
+
+// Create enum ComparisonStatus
+public enum ComparisonStatus
+{
+    Equal,
+    Different,
+    Manual,
+    Error
+}
+
+public static class ComparisonStatusExtensions
+{
+    public static System.Drawing.Color GetColor(this ComparisonStatus status)
+    {
+        return status switch
+        {
+            ComparisonStatus.Equal => System.Drawing.Color.Green,
+            ComparisonStatus.Different => System.Drawing.Color.Red,
+            ComparisonStatus.Manual => System.Drawing.Color.Orange,
+            ComparisonStatus.Error => System.Drawing.Color.Gray,
+            _ => System.Drawing.Color.Black
+        };
     }
 }
