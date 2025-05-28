@@ -1,15 +1,19 @@
-namespace b_api_test;
+using System.Net.Http;
+using System.Collections.Generic;
 
-public static class Config
+namespace b_api_test.test;
+
+/// <summary>
+/// Custom test data class - Users can add their test data here
+/// </summary>
+public static class TestData
 {
-    public static string BaseUrl1 => "https://api-qa.baylorgenetics.com";
-    // public static string BaseUrl2 => "https://report-management-api-qa.baylorgenetics.com";
-    public static string BaseUrl2 => "https://sample-management-api-qa.baylorgenetics.com";
+    /// <summary>
+    /// List of test API details that users can modify
+    /// </summary>
+    public static readonly List<TestApiDetails> CustomTestData = reportManagementApis;
 
-    private static string token1 => "";
-
-    private static string token2 => "";
-    // Report management apis
+        // Report management apis
     private static List<TestApiDetails> reportManagementApis = [
         new TestApiDetails  {
             TestName = "[LIMS] /api/lims/reports/NISC/8691092",
@@ -186,32 +190,4 @@ public static class Config
             Endpoint = "/api/SampleFile/8691092",
         }
     ];
-
-
-
-    public static List<TestApiDetails> testSuite => samplemanagement;
-    
-    
-    public static ApiTester CreateDefaultTester()
-    {
-        return new ApiTester(
-            // Configure the first API service (Service A)
-            serviceA => serviceA
-                .SetBaseUrl(BaseUrl1)
-                .AddHeader("accept", "application/json"),
-            
-            // Configure a second API service (Service B)
-            serviceB => serviceB
-                .SetBaseUrl(BaseUrl2)
-                .AddHeader("accept", "application/json")
-        );
-    }
-}
-
-public class TestApiDetails
-{
-    public string Endpoint { get; set; }
-    public HttpMethod Method { get; set; }
-    public object? Data { get; set; }
-    public string TestName { get; set; }
 }
